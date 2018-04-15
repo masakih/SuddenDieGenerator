@@ -15,12 +15,13 @@ public class Generator {
         self.value = value
     }
     
-    public func generate() -> String {
+    public func generate(suffix: String? = nil) -> String {
         
-        let valueWidth = value.width / 2
+        let display = suffix.map { value + $0 } ?? value
+        let valueWidth = display.width / 2
         
         return "＿" + Array(repeating: "人", count: valueWidth + 2).reduce("", +) + "＿\n"
-            + "＞　" + value + "　＜\n"
+            + "＞　" + display + "　＜\n"
             + "￣Y" + Array(repeating: "^Y", count: valueWidth).reduce("", +) + "￣"
     }
 }
