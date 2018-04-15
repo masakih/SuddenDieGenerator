@@ -4,6 +4,8 @@
 //  Created by Hori,Masaki on 2018/04/15.
 //
 
+import Foundation
+import Basic
 import Utility
 import SuddenDieGeneratorCore
 
@@ -11,6 +13,8 @@ import SuddenDieGeneratorCore
 struct SuddenDieOptions {
     
     var suffix: String?
+    
+    var outputPath: AbsolutePath?
     
     var texts = [String]()
 }
@@ -30,14 +34,22 @@ let parser = ArgumentParser(usage: "text[s]", overview: "”Sudden die“ genera
 /// usageはhelpに使用される
 ///
 /// ArgumentBinderを利用し値を取得する
-binder.bind(option: parser.add(option: "--suffix",
-                               shortName: "-s",
-                               kind: String.self,
-                               usage: "Suffix of text"),
-            to: { options, suffix in
-                
-                options.suffix = suffix
+///
+/// 複数のオプションを同時にbind可能
+binder.bind(parser.add(option: "--suffix",
+                       shortName: "-s",
+                       kind: String.self,
+                       usage: "Suffix of text"),
+            parser.add(option: "--output",
+                       shortName: "-o",
+                       kind: PathArgument.self,
+                       usage: "output file"),
+    to: { options, suffix, output in
+        
+        options.suffix = suffix
+        options.outputPath = output?.path
 })
+
 
 /// パーサに引数の指定を追加
 /// positionalは識別子であり、heplに使用される
@@ -66,11 +78,21 @@ do {
     /// パースの結果を用いてbindすることで与えたoptionsに値が設定される
     binder.fill(result, into: &options)
     
-    options
+    let displayText = options
         .texts
         .map { Generator($0) }
         .map { $0.generate(suffix: options.suffix) }
-        .forEach { print($0) }
+        .reduce(into: [String]()) { $0.append($1) }
+        .joined(separator: "\n")
+    
+    if let outputPath = options.outputPath?.asString {
+        
+        try displayText.data(using: .utf8)?.write(to: Foundation.URL(fileURLWithPath: outputPath))
+        
+    } else {
+        
+        print(displayText)
+    }
     
 } catch let error as ArgumentParserError {
     
