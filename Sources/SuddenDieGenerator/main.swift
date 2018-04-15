@@ -11,22 +11,22 @@ import SuddenDieGeneratorCore
 /// usage, overviewはhelpに使用される
 let parser = ArgumentParser(usage: "text", overview: "”Sudden die“ generator")
 
+/// パーサにオプションの指定を追加
+/// optionは "--" から始めなければならない
+/// shortNameは "-" から始めなければならない
+/// kindはオプションの値の型
+/// usageはhelpに使用される
+let suffix = parser.add(option: "--suffix",
+                        shortName: "-s",
+                        kind: String.self,
+                        usage: "Suffix of text")
+
 /// パーサに引数の指定を追加
 /// positionalは識別子であり、heplに使用される
 /// kindは引数の型
 /// usageはhelpに使用される
 let arguments = parser.add(positional: "text", kind: String.self, usage: "Base text")
 
-
-/// パーサにオプションの指定を追加
-/// optionは -- から始めなければならない
-/// shortNameは - から始めなければならない
-/// kindはオプションの値の型
-/// usageはhelpに使用される
-let suffix = parser.add(option: "--suffix",
-                       shortName: "-s",
-                       kind: String.self,
-                       usage: "Sufix of text")
 
 do {
     
