@@ -12,7 +12,7 @@ struct SuddenDieOptions {
     
     var suffix: String?
     
-    var text = ""
+    var texts = [String]()
 }
 
 /// 引数やオプションを設定するのに利用するArgumentBinder
@@ -21,7 +21,7 @@ let binder = ArgumentBinder<SuddenDieOptions>()
 
 /// ベースとなるパーサ
 /// usage, overviewはhelpに使用される
-let parser = ArgumentParser(usage: "text", overview: "”Sudden die“ generator")
+let parser = ArgumentParser(usage: "text[s]", overview: "”Sudden die“ generator")
 
 /// パーサにオプションの指定を追加
 /// optionは "--" から始めなければならない
@@ -42,13 +42,17 @@ binder.bind(option: parser.add(option: "--suffix",
 /// パーサに引数の指定を追加
 /// positionalは識別子であり、heplに使用される
 /// kindは引数の型
+/// strategyは読み込みをどのように行うか。upToNextOptionは次のオプションが現れるまでの値を全て取得する
 /// usageはhelpに使用される
 ///
 /// ArgumentBinderを利用し値を取得する
-binder.bind(positional: parser.add(positional: "text", kind: String.self, usage: "Base text"),
-            to: { options, text in
+binder.bindArray(positional: parser.add(positional: "text[s]",
+                                        kind: [String].self,
+                                        strategy: .upToNextOption,
+                                        usage: "Base texts"),
+            to: { options, texts in
                 
-                options.text = text
+                options.texts = texts
 })
 
 do {
@@ -61,9 +65,12 @@ do {
     
     /// パースの結果を用いてbindすることで与えたoptionsに値が設定される
     binder.fill(result, into: &options)
-
-    let generator = Generator(options.text)
-    print(generator.generate(suffix: options.suffix))
+    
+    options
+        .texts
+        .map { Generator($0) }
+        .map { $0.generate(suffix: options.suffix) }
+        .forEach { print($0) }
     
 } catch let error as ArgumentParserError {
     
